@@ -1,0 +1,37 @@
+name: Build APK
+
+# 什么时候自动触发编译：每次你上传/修改代码到仓库时，或者手动点"Run workflow"按钮时
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 配置Java环境
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: 配置Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 安装Gradle 8.7
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.7'
+
+      - name: 编译Debug APK
+        run: gradle assembleDebug --stacktrace
+
+      - name: 上传编译好的APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
