@@ -1,6 +1,5 @@
 name: Build APK
 
-# 什么时候自动触发编译：每次你上传/修改代码到仓库时，或者手动点"Run workflow"按钮时
 on:
   push:
     branches: [ "main", "master" ]
@@ -21,14 +20,18 @@ jobs:
 
       - name: 配置Android SDK
         uses: android-actions/setup-android@v3
-
-      - name: 安装Gradle 8.7
-        uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: '8.7'
+          packages: ''
 
       - name: 编译Debug APK
-        run: gradle assembleDebug --stacktrace
+        run: |
+          chmod +x ./gradlew || true
+          if [ -f ./gradlew ]; then
+            ./gradlew assembleDebug --stacktrace
+          else
+            gradle wrapper --gradle-version 8.7
+            ./gradlew assembleDebug --stacktrace
+          fi
 
       - name: 上传编译好的APK
         uses: actions/upload-artifact@v4
