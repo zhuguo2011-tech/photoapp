@@ -14,8 +14,60 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@color/purple_500"
+            android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar"
+            app:popupTheme="@style/ThemeOverlay.Material3.Light"
             app:titleTextColor="@color/white"
+            app:subtitleTextColor="#DDFFFFFF"
             app:navigationIcon="@android:drawable/ic_menu_close_clear_cancel" />
+
+        <!-- 新版：上传进度面板（第几个、百分比、服务器处理中），上传时显示在标题栏下面 -->
+        <LinearLayout
+            android:id="@+id/uploadPanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/white"
+            android:paddingStart="12dp"
+            android:paddingEnd="4dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="8dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/textUploadStatus"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:maxLines="2"
+                    android:ellipsize="end"
+                    android:text="正在上传…"
+                    android:textColor="#444444"
+                    android:textSize="13sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCancelUpload"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="取消"
+                    android:textColor="#D32F2F" />
+            </LinearLayout>
+
+            <ProgressBar
+                android:id="@+id/progressUploadBar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:max="100"
+                android:progress="0" />
+        </LinearLayout>
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -25,12 +77,16 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
+        <!-- 新版：底部多留出一些空白，最后一排照片不会被右下角的按钮挡住（注意不能再写 android:padding，它会覆盖 paddingBottom） -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerPhotos"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
-            android:padding="4dp" />
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="96dp" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
@@ -108,6 +164,7 @@
         app:backgroundTint="@color/purple_500"
         app:tint="@color/white" />
 
+    <!-- 旧版上传时显示的转圈（新版改用标题栏下面的进度面板，这个保留但不再使用） -->
     <ProgressBar
         android:id="@+id/progressUpload"
         android:layout_width="wrap_content"

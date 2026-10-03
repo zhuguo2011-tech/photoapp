@@ -1,14 +1,18 @@
 package com.nanjing.photoapp
 
 import android.os.Bundle
+import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.nanjing.photoapp.api.ApiClient
 import com.nanjing.photoapp.databinding.ActivityLoginBinding
 import com.nanjing.photoapp.model.LoginRequest
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
+// 管理员登录页
+// 【新版】输完密码直接按键盘上的“完成/回车”就能登录；网络出错时提示具体原因
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
@@ -19,9 +23,18 @@ class LoginActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.btnLogin.setOnClickListener { doLogin() }
+        binding.editPassword.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_GO) {
+                doLogin()
+                true
+            } else {
+                false
+            }
+        }
     }
 
     private fun doLogin() {
+        if (!binding.btnLogin.isEnabled) return // 正在登录中，防止重复点
         val username = binding.editUsername.text.toString().trim()
         val password = binding.editPassword.text.toString()
 
@@ -44,8 +57,10 @@ class LoginActivity : AppCompatActivity() {
                 } else {
                     Toast.makeText(this@LoginActivity, ApiClient.errorMessage(response), Toast.LENGTH_SHORT).show()
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                Toast.makeText(this@LoginActivity, "网络请求失败，请检查服务器地址和网络连接", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@LoginActivity, ApiClient.networkErrorMessage(e), Toast.LENGTH_LONG).show()
             } finally {
                 binding.progressLogin.visibility = android.view.View.GONE
                 binding.btnLogin.isEnabled = true

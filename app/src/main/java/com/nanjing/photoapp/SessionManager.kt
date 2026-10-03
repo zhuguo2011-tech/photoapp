@@ -58,6 +58,29 @@ object SessionManager {
         prefs.edit().remove(KEY_BASE_URL).apply()
     }
 
+    // 新版：整理用户输入的服务器地址，减少填错的可能：
+    // - 中文输入法打出来的全角冒号/句号/斜杠自动改成半角，去掉空格
+    // - 没写 http:// 的自动补上
+    // - 粘贴的是网页版链接（.../photoapp/gallery.html）时自动去掉文件名
+    // - 末尾自动补斜杠；只填了“IP:端口”（后面没有路径）时自动补上 photoapp/
+    fun normalizeBaseUrl(input: String): String {
+        var url = input.trim()
+            .replace('：', ':').replace('。', '.').replace('／', '/')
+            .replace(" ", "")
+        if (url.isEmpty()) return url
+        if (!url.startsWith("http://", ignoreCase = true) && !url.startsWith("https://", ignoreCase = true)) {
+            url = "http://$url"
+        }
+        val lower = url.lowercase()
+        if (lower.endsWith(".html") || lower.endsWith(".php")) {
+            url = url.substring(0, url.lastIndexOf('/') + 1)
+        }
+        if (!url.endsWith("/")) url += "/"
+        val path = url.substringAfter("://").substringAfter('/', "")
+        if (path.isEmpty()) url += "photoapp/"
+        return url
+    }
+
     // ===== 相册密码验证令牌（每个相册单独存，验证通过一次后一段时间内不用重复输密码） =====
     fun getViewToken(context: Context, albumId: Int): String? {
         val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)

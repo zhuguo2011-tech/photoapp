@@ -11,8 +11,24 @@ android {
         applicationId = "com.nanjing.photoapp"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        // 新版：版本号从 1 / 1.0 升到 2 / 2.0（安卓靠 versionCode 判断是不是新版本）
+        versionCode = 2
+        versionName = "2.0"
+    }
+
+    // 新版：固定签名文件。
+    // 以前每次在GitHub编译都会随机生成一个新的调试签名，结果每个新版APK的签名都不一样，
+    // 手机上装新版时会提示“签名不一致/安装失败”，只能先卸载旧版（APP里保存的服务器地址、登录状态都会丢）。
+    // 现在所有版本都用 app 文件夹里这个 photoapp-debug.keystore 签名，以后更新直接覆盖安装即可。
+    // （第一次从旧版升级到这个版本时，因为旧版是随机签名，还是需要先卸载一次旧版）
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("photoapp-debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+            storeType = "pkcs12"
+        }
     }
 
     buildTypes {

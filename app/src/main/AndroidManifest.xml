@@ -29,9 +29,11 @@
             android:exported="false"
             android:theme="@style/Theme.PhotoApp" />
 
+        <!-- 新版：configChanges 表示旋转屏幕时页面不重建（以前一转屏，正在上传的会被中断、列表会重新加载） -->
         <activity
             android:name=".AlbumDetailActivity"
             android:exported="false"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode"
             android:theme="@style/Theme.PhotoApp" />
 
         <activity
@@ -39,15 +41,19 @@
             android:exported="false"
             android:theme="@style/Theme.PhotoApp" />
 
+        <!-- 新版：旋转屏幕时不重建（以前一转屏会跳回最开始点开的那张） -->
         <activity
             android:name=".PhotoViewerActivity"
             android:exported="false"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode"
             android:theme="@style/Theme.PhotoApp"
             android:screenOrientation="unspecified" />
 
+        <!-- 新版：旋转屏幕时不重建（以前一转屏视频会从头开始播） -->
         <activity
             android:name=".VideoPlayerActivity"
             android:exported="false"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode"
             android:theme="@style/Theme.PhotoApp"
             android:screenOrientation="unspecified" />
 

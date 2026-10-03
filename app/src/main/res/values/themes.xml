@@ -1,5 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.PhotoApp" parent="Theme.Material3.DayNight.NoActionBar">
+    <!-- 新版：固定使用浅色主题（以前是 DayNight 跟随系统深色模式，但页面里很多颜色是写死的浅色，
+         手机开深色模式时会出现深色卡片配浅灰背景之类的混搭，固定浅色后和网页版一致） -->
+    <style name="Theme.PhotoApp" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/purple_500</item>
     </style>
 </resources>

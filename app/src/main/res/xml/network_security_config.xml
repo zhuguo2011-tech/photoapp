@@ -5,7 +5,14 @@
     如果以后你的服务器地址换了，或者上了HTTPS证书，记得同步改这里（换IP的话改下面的domain；上了HTTPS的话这个文件可以直接删掉，并且把manifest里的
     android:usesCleartextTraffic="true" 也删掉）。
 -->
+<!--
+    【新版】增加了 base-config：允许访问【任何】http地址。
+    原因：以前只允许上面写的这一个IP，如果以后服务器换了IP，在APP“服务器设置”里改了地址也连不上
+    （会报“CLEARTEXT communication not permitted”），只能改这个文件重新编译。现在换IP也只要在设置里改地址。
+    下面原来的 domain-config 保留不动（有了 base-config 后它其实已经包含在内了）。
+-->
 <network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="false">146.56.204.247</domain>
     </domain-config>

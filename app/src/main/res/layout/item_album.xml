@@ -23,6 +23,33 @@
                 android:background="#E0E0E0"
                 android:scaleType="fitCenter" />
 
+            <!-- 新版：带密码的相册在封面上显示“需要密码” -->
+            <TextView
+                android:id="@+id/textLocked"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="需要密码"
+                android:textColor="#AAAAAA"
+                android:textSize="13sp"
+                android:visibility="gone" />
+
+            <!-- 新版：带密码的相册右上角显示锁（🔒没解锁 / 🔓已解锁） -->
+            <TextView
+                android:id="@+id/textLock"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|end"
+                android:layout_margin="6dp"
+                android:background="#88000000"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:paddingTop="1dp"
+                android:paddingBottom="1dp"
+                android:text="🔒"
+                android:textSize="12sp"
+                android:visibility="gone" />
+
             <ImageView
                 android:id="@+id/iconCoverVideo"
                 android:layout_width="24dp"
