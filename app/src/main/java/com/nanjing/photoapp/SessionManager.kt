@@ -58,6 +58,36 @@ object SessionManager {
         prefs.edit().remove(KEY_BASE_URL).apply()
     }
 
+    // 新版：整理用户输入的服务器地址，减少填错的可能：
+    // - 中文输入法打出来的全角冒号/句号/斜杠自动改成半角，去掉空格
+    // - 没写 http:// 的自动补上
+    // - 粘贴的是网页版链接（.../photoapp/gallery.html）时自动去掉文件名
+    // - 末尾自动补斜杠；只填了“IP:端口”（后面没有路径）时自动补上 photoapp/
+    // - （最终版补充）去掉链接末尾的 ?参数/#锚点（微信转发的链接常带 ?from=singlemessage）；
+    //   开头的 Http:// 之类统一成小写
+    fun normalizeBaseUrl(input: String): String {
+        var url = input.trim()
+            .replace('：', ':').replace('。', '.').replace('／', '/')
+            .replace(" ", "")
+        if (url.isEmpty()) return url
+        // 去掉链接后面的 ?参数 和 #锚点（微信转发的链接末尾常带 ?from=singlemessage 之类）
+        url = url.substringBefore('?').substringBefore('#')
+        // 开头的 http:// 统一成小写（有的输入法会自动把首字母大写成 Http://）
+        url = when {
+            url.startsWith("http://", ignoreCase = true) -> "http://" + url.substring(7)
+            url.startsWith("https://", ignoreCase = true) -> "https://" + url.substring(8)
+            else -> "http://$url"
+        }
+        val lower = url.lowercase()
+        if (lower.endsWith(".html") || lower.endsWith(".php")) {
+            url = url.substring(0, url.lastIndexOf('/') + 1)
+        }
+        if (!url.endsWith("/")) url += "/"
+        val path = url.substringAfter("://").substringAfter('/', "")
+        if (path.isEmpty()) url += "photoapp/"
+        return url
+    }
+
     // ===== 相册密码验证令牌（每个相册单独存，验证通过一次后一段时间内不用重复输密码） =====
     fun getViewToken(context: Context, albumId: Int): String? {
         val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)

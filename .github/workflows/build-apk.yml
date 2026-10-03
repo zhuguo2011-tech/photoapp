@@ -1,5 +1,16 @@
 name: Build APK
 
+# 推送代码到 main/master 分支、或者在 Actions 页面手动点 Run workflow 时，自动编译 APK
+#
+# 【新版说明】（2026-10 更新）
+# 1. 运行环境固定为 ubuntu-24.04（以前是 ubuntu-latest）：GitHub 计划在 2026-10-19 起把 ubuntu-latest
+#    换成新系统，新系统刚上线时预装软件可能有变化，固定版本可以避免哪天突然编译失败。
+# 2. 各组件升级到最新大版本：checkout v7 / setup-java v6 / upload-artifact v7（都基于 Node 24，
+#    GitHub 正在淘汰基于 Node 20 的旧版组件，旧版会出黄色警告，以后会直接不能用）。
+# 3. 新增“安装 Gradle 8.7”这一步：以前是用服务器预装的 Gradle 先生成 gradlew 再编译，
+#    预装的 Gradle 一旦升级到 9.x，和本项目的安卓插件不兼容就会编译失败；现在固定用 8.7。
+#    同时关闭了缓存（以前缓存会产生一堆黄色警告提示，这个项目很少编译，不需要缓存）。
+# 4. 上传结果改成直接上传 apk 文件本身（archive: false），在 Artifacts 里下载到的就是 apk，不用再解压 zip。
 on:
   push:
     branches: [ "main", "master" ]
@@ -7,13 +18,13 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: 拉取代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: 配置Java环境
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: 'temurin'
           java-version: '17'
@@ -27,18 +38,27 @@ jobs:
           echo "预装SDK路径: $ANDROID_SDK_ROOT"
           ls "$ANDROID_SDK_ROOT"
 
+      # 新版：固定安装 Gradle 8.7（本项目的安卓插件 AGP 8.4 需要 Gradle 8.6 ~ 8.x）
+      - name: 安装 Gradle 8.7
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: '8.7'
+          cache-disabled: true
+
       - name: 编译Debug APK
         run: |
-          chmod +x ./gradlew || true
           if [ -f ./gradlew ]; then
+            chmod +x ./gradlew
             ./gradlew assembleDebug --stacktrace
           else
-            gradle wrapper --gradle-version 8.7
-            ./gradlew assembleDebug --stacktrace
+            gradle assembleDebug --stacktrace
           fi
 
+      # archive: false 时，Artifacts 列表里显示的名字就是文件名 app-debug.apk，
+      # 下面 name 这一行会被忽略（保留着不影响）
       - name: 上传编译好的APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: app-debug
           path: app/build/outputs/apk/debug/app-debug.apk
+          archive: false
