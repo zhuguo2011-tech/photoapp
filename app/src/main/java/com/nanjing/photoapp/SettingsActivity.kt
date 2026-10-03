@@ -8,6 +8,7 @@ import com.nanjing.photoapp.api.ApiClient
 import com.nanjing.photoapp.databinding.ActivitySettingsBinding
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 // 服务器设置：每月换端口后在这里改地址，不用重新编译APP
 // 【新版改进】
@@ -29,6 +30,12 @@ class SettingsActivity : AppCompatActivity() {
             val url = SessionManager.normalizeBaseUrl(binding.editBaseUrl.text.toString())
             if (url.isEmpty() || !(url.startsWith("http://") || url.startsWith("https://"))) {
                 Toast.makeText(this, "地址要以 http:// 或 https:// 开头", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            // 新版：保存前再检查一下地址格式（比如IP里多打了符号、端口不是数字），
+            // 格式不对的地址存进去以后，APP的所有页面都会连不上
+            if (url.toHttpUrlOrNull() == null) {
+                Toast.makeText(this, "地址格式不对，请检查（例如 http://146.56.204.247:62225/photoapp/）", Toast.LENGTH_LONG).show()
                 return@setOnClickListener
             }
             binding.editBaseUrl.setText(url)

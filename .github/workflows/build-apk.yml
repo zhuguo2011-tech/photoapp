@@ -54,6 +54,8 @@ jobs:
             gradle assembleDebug --stacktrace
           fi
 
+      # archive: false 时，Artifacts 列表里显示的名字就是文件名 app-debug.apk，
+      # 下面 name 这一行会被忽略（保留着不影响）
       - name: 上传编译好的APK
         uses: actions/upload-artifact@v7
         with:

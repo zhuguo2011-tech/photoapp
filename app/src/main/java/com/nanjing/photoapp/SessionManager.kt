@@ -63,13 +63,20 @@ object SessionManager {
     // - 没写 http:// 的自动补上
     // - 粘贴的是网页版链接（.../photoapp/gallery.html）时自动去掉文件名
     // - 末尾自动补斜杠；只填了“IP:端口”（后面没有路径）时自动补上 photoapp/
+    // - （最终版补充）去掉链接末尾的 ?参数/#锚点（微信转发的链接常带 ?from=singlemessage）；
+    //   开头的 Http:// 之类统一成小写
     fun normalizeBaseUrl(input: String): String {
         var url = input.trim()
             .replace('：', ':').replace('。', '.').replace('／', '/')
             .replace(" ", "")
         if (url.isEmpty()) return url
-        if (!url.startsWith("http://", ignoreCase = true) && !url.startsWith("https://", ignoreCase = true)) {
-            url = "http://$url"
+        // 去掉链接后面的 ?参数 和 #锚点（微信转发的链接末尾常带 ?from=singlemessage 之类）
+        url = url.substringBefore('?').substringBefore('#')
+        // 开头的 http:// 统一成小写（有的输入法会自动把首字母大写成 Http://）
+        url = when {
+            url.startsWith("http://", ignoreCase = true) -> "http://" + url.substring(7)
+            url.startsWith("https://", ignoreCase = true) -> "https://" + url.substring(8)
+            else -> "http://$url"
         }
         val lower = url.lowercase()
         if (lower.endsWith(".html") || lower.endsWith(".php")) {

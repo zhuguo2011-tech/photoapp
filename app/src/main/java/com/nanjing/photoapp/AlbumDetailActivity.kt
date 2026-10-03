@@ -68,6 +68,7 @@ class AlbumDetailActivity : AppCompatActivity() {
     private var uploadJob: Job? = null
     private var storeVersionSeen = -1   // 打开大图页那一刻 PhotoStore 的版本号
     private var passwordDialog: AlertDialog? = null
+    private val pendingUploaded = ArrayList<Photo>() // 多选期间传完的照片，退出多选后再插到最前面
 
     private val pickMediaLauncher = registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia()) { uris ->
         if (uris.isNotEmpty()) uploadMultiple(uris)
@@ -574,15 +575,34 @@ class AlbumDetailActivity : AppCompatActivity() {
     }
 
     // 新上传成功的照片插到最前面（新版：不用整页刷新）
+    // （最终版补充）正在多选时先不插入：插到最前面会让所有格子的位置都往后挪一格，
+    // 正在拖动选择的范围会错位一格。先放进 pendingUploaded，退出多选时再插到最前面。
     private fun insertUploadedPhoto(photo: Photo) {
-        if (currentPhotos.any { it.id == photo.id }) return
+        if (currentPhotos.any { it.id == photo.id } || pendingUploaded.any { it.id == photo.id }) return
+        albumTotal++
+        updateSubtitle()
+        if (adapter.selectionMode) {
+            pendingUploaded.add(photo)
+            return
+        }
+        insertAtTopNow(photo)
+    }
+
+    private fun insertAtTopNow(photo: Photo) {
+        if (currentPhotos.any { it.id == photo.id }) return // 比如期间下拉刷新过，列表里已经有了
         val atTop = gridLayoutManager.findFirstVisibleItemPosition() <= 0
         currentPhotos.add(0, photo)
         adapter.insertAtTop(photo)
-        albumTotal++
         binding.textEmpty.visibility = View.GONE
-        updateSubtitle()
         if (atTop) binding.recyclerPhotos.scrollToPosition(0)
+    }
+
+    // 退出多选后，把多选期间传完的照片插到最前面（按上传完成的先后顺序，最新的在最前）
+    private fun flushPendingUploaded() {
+        if (pendingUploaded.isEmpty()) return
+        val list = ArrayList(pendingUploaded)
+        pendingUploaded.clear()
+        list.forEach { insertAtTopNow(it) }
     }
 
     // ================= 单个删除（保留原有方式不变） =================
@@ -660,6 +680,7 @@ class AlbumDetailActivity : AppCompatActivity() {
         dragSelectListener.setActive(false)
         binding.selectToolbar.visibility = View.GONE
         updateManageUi()
+        flushPendingUploaded()
     }
 
     // 新版：按钮上显示选中了几项；全选后按钮变成“取消全选”

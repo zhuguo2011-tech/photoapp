@@ -27,11 +27,13 @@ import retrofit2.Response
 // - 管理员登录后，带密码的相册也直接显示封面（不用输密码）；登录过期自动退出登录状态
 // - 访客点公告可以看全文、一键复制（比如复制里面的微信号）；管理员改公告用多行输入框
 // - 网络出错时提示具体原因（连不上/超时/地址不对……）
+// - （最终版补充）公告清空后，管理员仍能看到“点这里添加公告”的提示栏（以前清空后就没有入口再添加了）
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: AlbumAdapter
     private var currentAnnouncement: String = ""
+    private var announcementLoaded = false // 公告是否成功读取过（读取失败时不显示“没有公告”的提示）
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,17 +94,32 @@ class MainActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     val text = response.body()?.announcement ?: ""
                     currentAnnouncement = text
-                    if (text.isNotBlank()) {
-                        binding.textAnnouncement.text = text
-                        binding.textAnnouncement.visibility = android.view.View.VISIBLE
-                        binding.textAnnouncement.isSelected = true
-                    } else {
-                        binding.textAnnouncement.visibility = android.view.View.GONE
-                    }
+                    announcementLoaded = true
+                    renderAnnouncement()
                 }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) { /* 公告加载失败不影响主功能 */ }
+        }
+    }
+
+    // 显示公告栏（最终版补充：拆成单独的函数，登录/退出时也会调用）
+    // 公告为空时：访客看不到公告栏；管理员会看到一条“点这里添加公告”的提示。
+    // （以前公告一旦清空，公告栏就隐藏了，而修改公告的入口正是公告栏，导致再也没法添加新公告）
+    private fun renderAnnouncement() {
+        val tv = binding.textAnnouncement
+        when {
+            currentAnnouncement.isNotBlank() -> {
+                // 内容没变就不重新设置文字，避免跑马灯从头开始滚
+                if (tv.text.toString() != currentAnnouncement) tv.text = currentAnnouncement
+                tv.visibility = android.view.View.VISIBLE
+                tv.isSelected = true
+            }
+            announcementLoaded && SessionManager.isLoggedIn(this) -> {
+                tv.text = "（当前没有公告，管理员点这里可以添加）"
+                tv.visibility = android.view.View.VISIBLE
+            }
+            else -> tv.visibility = android.view.View.GONE
         }
     }
 
@@ -158,6 +175,7 @@ class MainActivity : AppCompatActivity() {
         val loggedIn = SessionManager.isLoggedIn(this)
         binding.fabAddAlbum.visibility = if (loggedIn) android.view.View.VISIBLE else android.view.View.GONE
         invalidateOptionsMenu()
+        renderAnnouncement() // 最终版补充：公告为空时的“添加公告”提示跟着登录状态显示/隐藏
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

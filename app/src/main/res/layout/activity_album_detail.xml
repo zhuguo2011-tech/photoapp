@@ -139,13 +139,17 @@
 
     </LinearLayout>
 
+    <!-- 新版修正：以前这里写的是 layout_margin="24dp" 加 layout_marginEnd="90dp"，
+         但安卓规定两个同时写时 layout_margin 优先、marginEnd 会被忽略，
+         结果“多选”按钮和“上传”按钮叠在同一个位置，被上传按钮完全挡住看不见（只能靠长按进多选）。
+         现在分开写下边距和右边距，多选按钮就会出现在上传按钮的左边。 -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabSelectMode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="24dp"
-        android:layout_marginEnd="90dp"
+        android:layout_marginBottom="24dp"
+        android:layout_marginEnd="96dp"
         android:contentDescription="多选"
         android:src="@android:drawable/ic_menu_agenda"
         android:visibility="gone"

@@ -132,6 +132,7 @@ object ApiClient {
         is SocketTimeoutException -> "连接超时：网络太慢或服务器没有响应，请稍后再试"
         is UnknownServiceException -> "系统不允许连接这个地址（明文http被禁止）"
         is JsonParseException, is EOFException -> "服务器返回的内容无法识别，请检查“服务器设置”里的地址是否正确"
+        is IllegalArgumentException -> "服务器地址格式不对，请到“服务器设置”里检查地址"
         else -> "网络请求失败，请检查服务器地址和网络连接"
     }
 }
